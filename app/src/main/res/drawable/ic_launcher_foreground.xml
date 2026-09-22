@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Resume Document Card -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M34,26 h30 l12,12 v44 c0,2.2 -1.8,4 -4,4 H34 c-2.2,0 -4,-1.8 -4,-4 V30 c0,-2.2 1.8,-4 4,-4 z" />
+
+    <!-- Folded Corner -->
+    <path
+        android:fillColor="#CBD5E1"
+        android:pathData="M64,26 v12 h12 z" />
+
+    <!-- Resume Header Avatar & Text -->
+    <path
+        android:fillColor="#3B82F6"
+        android:pathData="M37,34 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0" />
+
+    <path
+        android:fillColor="#60A5FA"
+        android:pathData="M48,32 h20 c0.8,0 1.5,0.7 1.5,1.5 s-0.7,1.5 -1.5,1.5 H48 c-0.8,0 -1.5,-0.7 -1.5,-1.5 s0.7,-1.5 1.5,-1.5 z" />
+
+    <path
+        android:fillColor="#94A3B8"
+        android:pathData="M48,37 h14 c0.6,0 1,0.4 1,1 s-0.4,1 -1,1 H48 c-0.6,0 -1,-0.4 -1,-1 s0.4,-1 1,-1 z" />
+
+    <!-- Resume Content Lines -->
+    <path
+        android:fillColor="#0284C7"
+        android:pathData="M37,46 h34 c0.8,0 1.5,0.7 1.5,1.5 s-0.7,1.5 -1.5,1.5 H37 c-0.8,0 -1.5,-0.7 -1.5,-1.5 s0.7,-1.5 1.5,-1.5 z" />
+
+    <path
+        android:fillColor="#94A3B8"
+        android:pathData="M37,52 h26 c0.6,0 1,0.4 1,1 s-0.4,1 -1,1 H37 c-0.6,0 -1,-0.4 -1,-1 s0.4,-1 1,-1 z" />
+
+    <path
+        android:fillColor="#94A3B8"
+        android:pathData="M37,57 h30 c0.6,0 1,0.4 1,1 s-0.4,1 -1,1 H37 c-0.6,0 -1,-0.4 -1,-1 s0.4,-1 1,-1 z" />
+
+    <path
+        android:fillColor="#94A3B8"
+        android:pathData="M37,62 h20 c0.6,0 1,0.4 1,1 s-0.4,1 -1,1 H37 c-0.6,0 -1,-0.4 -1,-1 s0.4,-1 1,-1 z" />
+
+    <!-- AI Sparkle 4-point star in top-right -->
+    <path
+        android:pathData="M73,20 Q73,26 79,26 Q73,26 73,32 Q73,26 67,26 Q73,26 73,20 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="67"
+                android:startY="20"
+                android:endX="79"
+                android:endY="32"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#38BDF8" />
+                <item android:offset="1.0" android:color="#818CF8" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Match Checkmark Badge in bottom-right -->
+    <path
+        android:pathData="M67,69 A9,9 0 1 0 67,87 A9,9 0 1 0 67,69 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="58"
+                android:startY="69"
+                android:endX="76"
+                android:endY="87"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#10B981" />
+                <item android:offset="1.0" android:color="#059669" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- White Checkmark in Badge -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M63.5,78 l2.5,2.5 l5,-5 c0.4,-0.4 1,-0.4 1.4,0 c0.4,0.4 0.4,1 0,1.4 l-5.7,5.7 c-0.4,0.4 -1,0.4 -1.4,0 l-3.2,-3.2 c-0.4,-0.4 -0.4,-1 0,-1.4 c0.4,-0.4 1,-0.4 1.4,0 z" />
+
+</vector>

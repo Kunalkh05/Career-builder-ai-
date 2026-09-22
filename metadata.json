@@ -1,0 +1,6 @@
+{
+  "name": "CareerFit AI",
+  "description": "AI-Powered Resume Intelligence and Modification Platform",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
