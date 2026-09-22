@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <cache-path name="resumes_cache" path="resumes/" />
+    <files-path name="resumes_files" path="resumes/" />
+    <external-cache-path name="resumes_ext_cache" path="resumes/" />
+    <external-files-path name="resumes_ext_files" path="resumes/" />
+</paths>
