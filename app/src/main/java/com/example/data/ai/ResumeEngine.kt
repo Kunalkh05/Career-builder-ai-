@@ -549,35 +549,92 @@ OUTPUT FORMAT: Return ONLY valid JSON array of objects with keys:
             ?.optJSONObject(0)
             ?.optString("text") ?: return emptyList()
 
-        val list = mutableListOf<ResumeSuggestion>()
-        val arr = JSONArray(text)
-        for (i in 0 until arr.length()) {
-            val item = arr.getJSONObject(i)
-            val secStr = item.optString("section", "EXPERIENCE")
-            val section = when (secStr.uppercase()) {
-                "SUMMARY" -> ResumeSection.SUMMARY
-                "PROJECTS" -> ResumeSection.PROJECTS
-                "SKILLS" -> ResumeSection.SKILLS
-                else -> ResumeSection.EXPERIENCE
-            }
-            val evStatusStr = item.optString("evidenceStatus", "SUPPORTED_BY_RESUME")
-            val evStatus = if (evStatusStr.contains("CONFIRM")) EvidenceStatus.REQUIRES_CONFIRMATION else EvidenceStatus.SUPPORTED_BY_RESUME
+        return parseAiSuggestionsJson(text)
+    }
 
-            list.add(
-                ResumeSuggestion(
-                    id = "sug_ai_$i",
-                    section = section,
-                    targetRef = item.optString("targetRef", "exp_0_bullet_$i"),
-                    originalText = item.optString("originalText"),
-                    suggestedText = item.optString("suggestedText"),
-                    reasonForChange = item.optString("reasonForChange", "Aligns with target role expectations."),
-                    relatedJobRequirement = item.optString("relatedJobRequirement", "Role Core Competency"),
-                    evidenceStatus = evStatus,
-                    placeholderNote = if (item.has("placeholderNote") && !item.isNull("placeholderNote")) item.getString("placeholderNote") else null
+    /**
+     * Resilient parser for AI generated suggestions, safely stripping markdown code blocks,
+     * handling both JSON arrays and object wrappers, and guarding against malformed JSON.
+     */
+    fun parseAiSuggestionsJson(rawJson: String): List<ResumeSuggestion> {
+        val list = mutableListOf<ResumeSuggestion>()
+        try {
+            var cleaned = rawJson.trim()
+            if (cleaned.startsWith("```json", ignoreCase = true)) {
+                cleaned = cleaned.substringAfter("```json").trim()
+            } else if (cleaned.startsWith("```")) {
+                cleaned = cleaned.substringAfter("```").trim()
+            }
+            if (cleaned.endsWith("```")) {
+                cleaned = cleaned.substringBeforeLast("```").trim()
+            }
+
+            val arr: JSONArray = when {
+                cleaned.startsWith("[") -> JSONArray(cleaned)
+                cleaned.startsWith("{") -> {
+                    val obj = JSONObject(cleaned)
+                    obj.optJSONArray("suggestions") ?: obj.optJSONArray("results") ?: JSONArray()
+                }
+                else -> return emptyList()
+            }
+
+            for (i in 0 until arr.length()) {
+                val item = arr.optJSONObject(i) ?: continue
+                val secStr = item.optString("section", "EXPERIENCE")
+                val section = when (secStr.uppercase()) {
+                    "SUMMARY" -> ResumeSection.SUMMARY
+                    "PROJECTS" -> ResumeSection.PROJECTS
+                    "SKILLS" -> ResumeSection.SKILLS
+                    else -> ResumeSection.EXPERIENCE
+                }
+                val evStatusStr = item.optString("evidenceStatus", "SUPPORTED_BY_RESUME")
+                val evStatus = if (evStatusStr.contains("CONFIRM")) EvidenceStatus.REQUIRES_CONFIRMATION else EvidenceStatus.SUPPORTED_BY_RESUME
+
+                list.add(
+                    ResumeSuggestion(
+                        id = "sug_ai_$i",
+                        section = section,
+                        targetRef = item.optString("targetRef", "exp_0_bullet_$i"),
+                        originalText = item.optString("originalText"),
+                        suggestedText = item.optString("suggestedText"),
+                        reasonForChange = item.optString("reasonForChange", "Aligns with target role expectations."),
+                        relatedJobRequirement = item.optString("relatedJobRequirement", "Role Core Competency"),
+                        evidenceStatus = evStatus,
+                        placeholderNote = if (item.has("placeholderNote") && !item.isNull("placeholderNote")) item.getString("placeholderNote") else null
+                    )
                 )
-            )
+            }
+        } catch (e: Exception) {
+            // Malformed JSON is handled gracefully without crashing
+            return emptyList()
         }
         return list
+    }
+
+    /**
+     * Unified pipeline method that runs the entire AI Resume Modification Engine:
+     * Job analysis, match evidence comparison, suggestion generation, and factual verification.
+     */
+    suspend fun analyzeAndModifyResume(
+        resume: Resume,
+        jobTarget: JobTarget
+    ): ResumeAnalysisResult = withContext(Dispatchers.Default) {
+        val jobAnalysis = analyzeJobDescription(jobTarget)
+        val matchAnalysis = compareResumeToJob(resume, jobAnalysis)
+        val suggestions = generateSuggestions(resume, jobTarget, jobAnalysis, matchAnalysis)
+        val initialModified = applySuggestionsToResume(resume, suggestions)
+        val qualityReport = performQualityCheck(resume, initialModified, jobTarget, suggestions)
+
+        ResumeAnalysisResult(
+            matchScore = matchAnalysis.matchScore,
+            summary = "Analyzed ${resume.fullName.ifEmpty { "Resume" }} against ${jobTarget.jobTitle} at ${jobTarget.companyName}. Found ${matchAnalysis.potentialMatches.size} evidence matches and ${matchAnalysis.possibleGaps.size} gaps.",
+            matches = matchAnalysis.potentialMatches,
+            gaps = matchAnalysis.possibleGaps,
+            suggestions = suggestions,
+            unsupportedClaims = matchAnalysis.unsupportedClaims,
+            factualIntegrityVerified = qualityReport.factualIntegrityVerified,
+            timestamp = System.currentTimeMillis()
+        )
     }
 
     private fun generateLocalRuleSuggestions(

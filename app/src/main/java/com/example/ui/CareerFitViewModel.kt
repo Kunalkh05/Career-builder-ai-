@@ -34,6 +34,7 @@ data class UiState(
     val jobAnalysis: JobAnalysis? = null,
     val matchAnalysis: MatchAnalysis? = null,
     val suggestions: List<ResumeSuggestion> = emptyList(),
+    val analysisResult: ResumeAnalysisResult? = null,
     val qualityReport: ResumeQualityReport? = null,
     val savedVersions: List<ResumeVersion> = emptyList(),
     val isAnalyzing: Boolean = false,
@@ -167,12 +168,23 @@ class CareerFitViewModel(application: Application) : AndroidViewModel(applicatio
 
             val qualityReport = ResumeEngine.performQualityCheck(currentResume, initialModified, targetJob, suggestions)
 
+            val analysisResult = ResumeAnalysisResult(
+                matchScore = matchAnalysis.matchScore,
+                summary = "Analyzed ${currentResume.fullName.ifEmpty { "Resume" }} against ${targetJob.jobTitle} at ${targetJob.companyName}. Found ${matchAnalysis.potentialMatches.size} evidence matches and ${matchAnalysis.possibleGaps.size} gaps.",
+                matches = matchAnalysis.potentialMatches,
+                gaps = matchAnalysis.possibleGaps,
+                suggestions = suggestions,
+                unsupportedClaims = matchAnalysis.unsupportedClaims,
+                factualIntegrityVerified = qualityReport.factualIntegrityVerified
+            )
+
             _uiState.update {
                 it.copy(
                     isAnalyzing = false,
                     jobAnalysis = jobAnalysis,
                     matchAnalysis = matchAnalysis,
                     suggestions = suggestions,
+                    analysisResult = analysisResult,
                     modifiedResume = initialModified,
                     qualityReport = qualityReport,
                     currentScreen = Screen.JOB_ANALYSIS,
