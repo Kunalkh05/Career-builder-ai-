@@ -1,0 +1,66 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        continue-on-error: true
+
+      - name: Accept Android SDK Licenses & Install Platform
+        run: |
+          yes | sdkmanager --licenses || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" || true
+
+      - name: Ensure Environment and Keystore
+        run: |
+          if [ ! -f .env ]; then cp .env.example .env; fi
+          if [ ! -f debug.keystore ]; then
+            keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          fi
+          chmod +x gradlew
+
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --no-daemon --no-configuration-cache --stacktrace
+
+      - name: Rename APK for Clarity
+        run: |
+          mkdir -p build_output
+          cp app/build/outputs/apk/debug/*.apk build_output/CareerFit-AI-debug.apk
+          ls -lh build_output/
+
+      - name: Upload Debug APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CareerFit-AI-debug-apk
+          path: build_output/CareerFit-AI-debug.apk
+          retention-days: 14
+
+      - name: Create or Update Release
+        run: |
+          gh release create v1.0-debug build_output/CareerFit-AI-debug.apk \
+            --title "CareerFit AI v1.0 (Debug APK)" \
+            --notes "Direct APK download for CareerFit AI." \
+            --clobber || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
